@@ -1,0 +1,7 @@
+--cpu ARM7TDMI
+".\startup.o"
+".\zad1.o"
+--strict --scatter ".\zad1.sct"
+--summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\zad1.map" -o .\zad1.axf
