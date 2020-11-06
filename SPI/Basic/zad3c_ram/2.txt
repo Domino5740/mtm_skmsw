@@ -1,0 +1,8 @@
+1 / 1 875 000 = 0,533us SCK T
+0,533us * 16 = 8,53us - na jedną transakcję
+360 * 8,53us = 3,070ms - sin T
+
+real:
+10us na transfer
+58,75us między transmisjami
+68,75us * 360 = 24,75ms
