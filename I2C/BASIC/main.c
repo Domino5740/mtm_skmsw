@@ -13,7 +13,6 @@
 
 #define I2C_SCL_HIGH_TIME 0x80
 #define I2C_SCL_LOW_TIME  0x80
-//I2cbit_f = fPCLK/(I2CSCLH + I2CSCLL)
 
 #define I2C_SLAVE_ADDR 0x20
 
@@ -48,41 +47,36 @@ __irq void I2C_Interrupt(void) {
 	
 	int iReadI2Stat = 0;
 	iReadI2Stat = I2C0STAT;
-	IO1SET = LED0_bm;
 	
 	switch(iReadI2Stat) {
 		case START_TRANSMITTED:
 			I2C0DAT = I2C_SLAVE_ADDR << 1; //slave address + 0: W bit
 			I2C0CONSET = AA_bm;
 			I2C0CONCLR = STA_bm;
-			IO1SET = LED1_bm;
 			break;
 		case REPEATED_START_TRANSMITTED:
 			I2C0DAT = I2C_SLAVE_ADDR << 1; //slave address + 0: W bit
 			I2C0CONSET = AA_bm;
 			I2C0CONCLR = STA_bm;
-			IO1SET = LED2_bm;
 			break;
 		case SLAR_ACK_RECEIVED:
 			I2C0DAT = ucI2CData;
 			I2C0CONSET = AA_bm;
-			IO1SET = LED3_bm;
 			break;
 		case SLAR_NOT_ACK_RECEIVED:
 			I2C0CONSET = STO_bm | AA_bm;
-			IO1SET = LED4_bm;
+			IO1SET = LED0_bm;
 			break;
 		case DATA_ACK_RECEIVED:
 			I2C0CONSET = STO_bm | AA_bm;
-			IO1SET = LED5_bm;
 			break;
 		case DATA_NOT_ACK_RECEIVED:
 			I2C0CONSET = STO_bm | AA_bm;
-			IO1SET = LED6_bm;
+			IO1SET = LED1_bm;
 			break;
 		case ARBITRATION_LOST:
 			I2C0CONSET = STA_bm | AA_bm;
-			IO1SET = LED7_bm;
+			IO1SET = LED2_bm;
 			break;
 	}
 	I2C0CONCLR = SI_bm;
@@ -92,6 +86,7 @@ __irq void I2C_Interrupt(void) {
 void I2C_init(void) {
 	
 	PINSEL0 = SCL0_bm | SDA0_bm;
+	
 	IO1DIR = LED0_bm | LED1_bm | LED2_bm | LED3_bm | LED4_bm | LED5_bm | LED6_bm | LED7_bm;
 	
 	VICIntSelect = 0x00;
@@ -106,6 +101,7 @@ void I2C_init(void) {
 }
 
 void PCF8574_Write(unsigned char ucData) {
+	
 	ucI2CData = ucData;
 	I2C0CONSET = STA_bm;
 }
