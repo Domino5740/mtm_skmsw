@@ -6,7 +6,7 @@
 
 //********************************************************I2C********************************************************************
 #define I2EN_bm 1 << 6  //I2C interface 1 = enable, 0 = disable
-#define STA_bm  1 << 5	 //START flag
+#define STA_bm  1 << 5	//START flag
 #define STO_bm  1 << 4  //STOP flag
 #define SI_bm   1 << 3  //I2C Interrupt flag
 #define AA_bm   1 << 2  //Assert Acknowledge flag
@@ -65,18 +65,21 @@ __irq void I2C_Interrupt(void) {
 			break;
 		case SLAR_NOT_ACK_RECEIVED:
 			I2C0CONSET = STO_bm | AA_bm;
-			IO1SET = LED0_bm;
+			IO1SET = iReadI2Stat;
 			break;
 		case DATA_ACK_RECEIVED:
 			I2C0CONSET = STO_bm | AA_bm;
 			break;
 		case DATA_NOT_ACK_RECEIVED:
 			I2C0CONSET = STO_bm | AA_bm;
-			IO1SET = LED1_bm;
+			IO1SET = iReadI2Stat;
 			break;
 		case ARBITRATION_LOST:
 			I2C0CONSET = STA_bm | AA_bm;
-			IO1SET = LED2_bm;
+			IO1SET = iReadI2Stat;
+			break;
+		default:
+			IO1SET = iReadI2Stat;
 			break;
 	}
 	I2C0CONCLR = SI_bm;
@@ -86,8 +89,6 @@ __irq void I2C_Interrupt(void) {
 void I2C_init(void) {
 	
 	PINSEL0 = SCL0_bm | SDA0_bm;
-	
-	IO1DIR = LED0_bm | LED1_bm | LED2_bm | LED3_bm | LED4_bm | LED5_bm | LED6_bm | LED7_bm;
 	
 	VICIntSelect = 0x00;
 	VICVectCntl0 = VIC_IRQ_EN_bm | VIC_I2C_INT;
@@ -100,6 +101,13 @@ void I2C_init(void) {
 	I2C0SCLL = I2C_SCL_LOW_TIME;
 }
 
+void Led_init(void) {
+	
+	IO1DIR = LED0_bm | LED1_bm | LED2_bm | LED3_bm | LED4_bm | LED5_bm | LED6_bm | LED7_bm;
+	IO1CLR = LED0_bm | LED1_bm | LED2_bm | LED3_bm | LED4_bm | LED5_bm | LED6_bm | LED7_bm;
+}
+
+//write byte to PCF8574
 void PCF8574_Write(unsigned char ucData) {
 	
 	ucI2CData = ucData;
@@ -118,6 +126,7 @@ int main(void) {
 	
 	unsigned char ucNum;
 	
+	Led_init();
 	I2C_init();
 	while(1) {
 		for(ucNum = 0; ucNum <= 255; ucNum++) {
