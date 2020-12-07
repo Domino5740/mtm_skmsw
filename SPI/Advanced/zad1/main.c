@@ -7,7 +7,7 @@
 #define P06_MOSI0_PINSEL0_bm 1 << 12
 
 //*****************************************PIN_bm*************************************************
-#define CS_DAC_P010_bm 1 << 10
+#define CS_P010_bm 1 << 10
 
 //*****************************************SPI_bm*************************************************
 #define SPI_LSBF_bm 0 << 6 // transfer 0 - MSB, 1 - LSB first
@@ -86,21 +86,21 @@ struct SPI_TransactionParams {
 void DAC_MCP_4921_Set(unsigned int uiVoltage) {
 	
 	PINSEL0 = P04_SCK0_PINSEL0_bm | P05_MISO0_PINSEL0_bm | P06_MOSI0_PINSEL0_bm;
-	IO0DIR = IO0DIR | CS_DAC_P010_bm;
+	IO0DIR = IO0DIR | CS_P010_bm;
 	
 	S0SPCCR = SPI_PCLK_DIVIDER;
 	S0SPCR = 0;
 	S0SPCR = SPI_LSBF_bm | SPI_MSTR_bm | SPI_CPOL_bm | SPI_CPHA_bm;
 	
-	IO0SET = CS_DAC_P010_bm;
-	IO0CLR = CS_DAC_P010_bm;
+	IO0SET = CS_P010_bm;
+	IO0CLR = CS_P010_bm;
 	
 	S0SPDR = DAC_CONFIG_BITS | ((uiVoltage & 0xf00) >> 8);
 	while(!(S0SPSR & SPIF)){}
 	S0SPDR = (uiVoltage & 0x0ff);
 	while(!(S0SPSR & SPIF)){}
 		
-	IO0SET = CS_DAC_P010_bm;
+	IO0SET = CS_P010_bm;
 }
 
 void DAC_MCP_4921_Set_mV(unsigned int uiVoltage) {
@@ -135,12 +135,11 @@ void SPI_ExecuteTransaction(struct SPI_TransactionParams sSPI_TransactionParams)
 }
 
 void DAC_MCP_4921_InitCSPin(void){
-	
-	IO0DIR = IO0DIR | CS_DAC_P010_bm;
-	IO0SET = CS_DAC_P010_bm;
+	IO0DIR = IO0DIR | CS_P010_bm;
+	IO0SET = CS_P010_bm;
 }
 
-void DAC_MCP_4921_Init(void) {
+void SPI_LPC2132_Init(void) {
 	
 	struct SPI_FrameParams sSPI_FrameParams;
 	
@@ -163,9 +162,9 @@ void DAC_MCP_4921_SetAdv(unsigned int uiVoltage) {
 	ucDACWord[0] = DAC_CONFIG_BITS | ((uiVoltage & 0xf00) >> 8);
 	ucDACWord[1] = uiVoltage & 0x0ff;
 	
-	IO0CLR = CS_DAC_P010_bm;
+	IO0CLR = CS_P010_bm;
 	SPI_ExecuteTransaction(sSPI_TransactionParams);
-	IO0SET = CS_DAC_P010_bm;
+	IO0SET = CS_P010_bm;
 }
 
 void DAC_MCP_4921_SetAdv_mV(unsigned int uiVoltage) {
@@ -178,12 +177,11 @@ void DAC_MCP_4921_SetAdv_mV(unsigned int uiVoltage) {
 
 //******************************************main************************************************
 int main() {
-	
 
 	int i;
 	
 	DAC_MCP_4921_InitCSPin();
-	DAC_MCP_4921_Init();
+	SPI_LPC2132_Init();
 	
 	while(1) {
 		for (i = 0; i < 360; i++) {

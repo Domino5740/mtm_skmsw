@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\SPI.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\SPI.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5.03 [Build 76]: Last Updated: Mon Dec 07 14:50:11 2020
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5.03 [Build 76]: Last Updated: Mon Dec 07 16:52:38 2020
 <BR><P>
 <H3>Maximum Stack Usage =         60 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -190,7 +190,7 @@ Global Symbols
 <P><STRONG><a name="[1e]"></a>SPI_ConfigMaster</STRONG> (ARM, 64 bytes, Stack size 4 bytes, main.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 4<LI>Call Chain = SPI_ConfigMaster
 </UL>
-<BR>[Called By]<UL><LI><a href="#[1d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DAC_MCP_4921_Init
+<BR>[Called By]<UL><LI><a href="#[1d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPI_LPC2132_Init
 </UL>
 
 <P><STRONG><a name="[20]"></a>SPI_ExecuteTransaction</STRONG> (ARM, 148 bytes, Stack size 16 bytes, main.o(.text))
@@ -203,8 +203,8 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[1d]"></a>DAC_MCP_4921_Init</STRONG> (ARM, 44 bytes, Stack size 8 bytes, main.o(.text))
-<BR><BR>[Stack]<UL><LI>Max Depth = 12<LI>Call Chain = DAC_MCP_4921_Init &rArr; SPI_ConfigMaster
+<P><STRONG><a name="[1d]"></a>SPI_LPC2132_Init</STRONG> (ARM, 44 bytes, Stack size 8 bytes, main.o(.text))
+<BR><BR>[Stack]<UL><LI>Max Depth = 12<LI>Call Chain = SPI_LPC2132_Init &rArr; SPI_ConfigMaster
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPI_ConfigMaster
 </UL>
@@ -234,7 +234,7 @@ Global Symbols
 <LI>Call Chain = main &rArr; DAC_MCP_4921_SetAdv_mV &rArr; DAC_MCP_4921_SetAdv &rArr; SPI_ExecuteTransaction
 </UL>
 <BR>[Calls]<UL><LI><a href="#[21]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DAC_MCP_4921_SetAdv_mV
-<LI><a href="#[1d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DAC_MCP_4921_Init
+<LI><a href="#[1d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPI_LPC2132_Init
 <LI><a href="#[22]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DAC_MCP_4921_InitCSPin
 <LI><a href="#[23]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_uisin_dac_value
 </UL>

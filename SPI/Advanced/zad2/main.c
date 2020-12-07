@@ -7,7 +7,7 @@
 #define P06_MOSI0_PINSEL0_bm 1 << 12
 
 //*****************************************PIN_bm*************************************************
-#define CS_DAC_P010_bm 1 << 10
+#define CS_P010_bm 1 << 10
 
 //*****************************************SPI_bm*************************************************
 #define SPI_LSBF_bm 0 << 6 // transfer 0 - MSB, 1 - LSB first
@@ -86,21 +86,21 @@ struct SPI_TransactionParams {
 void DAC_MCP_4921_Set(unsigned int uiVoltage) {
 	
 	PINSEL0 = P04_SCK0_PINSEL0_bm | P05_MISO0_PINSEL0_bm | P06_MOSI0_PINSEL0_bm;
-	IO0DIR = IO0DIR | CS_DAC_P010_bm;
+	IO0DIR = IO0DIR | CS_P010_bm;
 	
 	S0SPCCR = SPI_PCLK_DIVIDER;
 	S0SPCR = 0;
 	S0SPCR = SPI_LSBF_bm | SPI_MSTR_bm | SPI_CPOL_bm | SPI_CPHA_bm;
 	
-	IO0SET = CS_DAC_P010_bm;
-	IO0CLR = CS_DAC_P010_bm;
+	IO0SET = CS_P010_bm;
+	IO0CLR = CS_P010_bm;
 	
 	S0SPDR = DAC_CONFIG_BITS | ((uiVoltage & 0xf00) >> 8);
 	while(!(S0SPSR & SPIF)){}
 	S0SPDR = (uiVoltage & 0x0ff);
 	while(!(S0SPSR & SPIF)){}
 		
-	IO0SET = CS_DAC_P010_bm;
+	IO0SET = CS_P010_bm;
 }
 
 void DAC_MCP_4921_Set_mV(unsigned int uiVoltage) {
@@ -123,24 +123,23 @@ void SPI_ExecuteTransaction(struct SPI_TransactionParams sSPI_TransactionParams)
 	unsigned char  i;
 	
 	for(i = 0; i < sSPI_TransactionParams.ucNrOfBytesForTx; i++) {
-		S0SPDR = *(sSPI_TransactionParams.pucBytesForTx + sSPI_TransactionParams.ucTxBytesOffset);
+		S0SPDR = *(sSPI_TransactionParams.pucBytesForTx + sSPI_TransactionParams.ucTxBytesOffset + i);
 		while(!(S0SPSR & SPIF)){}
 	}
 	
 	for(i = 0; i < sSPI_TransactionParams.ucNrOfBytesForRx; i++) {
-		*(sSPI_TransactionParams.pucBytesForTx + sSPI_TransactionParams.ucRxBytesOffset) = S0SPDR;
+		*(sSPI_TransactionParams.pucBytesForTx + sSPI_TransactionParams.ucRxBytesOffset + i) = S0SPDR;
 		while(!(S0SPSR & SPIF)){}
 	}
 	
 }
 
 void DAC_MCP_4921_InitCSPin(void){
-	
-	IO0DIR = IO0DIR | CS_DAC_P010_bm;
-	IO0SET = CS_DAC_P010_bm;
+	IO0DIR = IO0DIR | CS_P010_bm;
+	IO0SET = CS_P010_bm;
 }
 
-void DAC_MCP_4921_Init(void) {
+void SPI_LPC2132_Init(void) {
 	
 	struct SPI_FrameParams sSPI_FrameParams;
 	
@@ -163,9 +162,9 @@ void DAC_MCP_4921_SetAdv(unsigned int uiVoltage) {
 	ucDACWord[0] = DAC_CONFIG_BITS | ((uiVoltage & 0xf00) >> 8);
 	ucDACWord[1] = uiVoltage & 0x0ff;
 	
-	IO0CLR = CS_DAC_P010_bm;
+	IO0CLR = CS_P010_bm;
 	SPI_ExecuteTransaction(sSPI_TransactionParams);
-	IO0SET = CS_DAC_P010_bm;
+	IO0SET = CS_P010_bm;
 }
 
 void DAC_MCP_4921_SetAdv_mV(unsigned int uiVoltage) {
@@ -176,18 +175,79 @@ void DAC_MCP_4921_SetAdv_mV(unsigned int uiVoltage) {
 	DAC_MCP_4921_SetAdv(D);
 }
 
+void Port_MCP23S09_InitCSPin(void) {
+	IO0DIR = IO0DIR | CS_P010_bm;
+	IO0SET = CS_P010_bm;
+}
+
+void Port_MCP23S09_Set(unsigned char ucData) {
+	
+	struct SPI_TransactionParams sSPI_TransactionParams;
+	unsigned char ucDataToSend[6];
+	
+	sSPI_TransactionParams.pucBytesForTx = ucDataToSend;
+	sSPI_TransactionParams.ucNrOfBytesForTx = 6;
+	sSPI_TransactionParams.ucTxBytesOffset = 0;
+	
+	ucDataToSend[0] = 0x40;
+	ucDataToSend[1] = 0x00;
+	ucDataToSend[2] = 0xff; //in
+	
+	ucDataToSend[3] = 0x40;
+	ucDataToSend[4] = 0x09;
+	ucDataToSend[5] = ucData;
+	
+	IO0CLR = CS_P010_bm;
+	SPI_ExecuteTransaction(sSPI_TransactionParams);
+	IO0SET = CS_P010_bm;
+	
+}
+
+unsigned char Port_MCP23S09_Get(void) {
+	
+	struct SPI_TransactionParams sSPI_TransactionParams;
+	unsigned char ucDataToSend[5];
+	unsigned char ucDataReceived;
+	
+	sSPI_TransactionParams.pucBytesForTx = ucDataToSend;
+	sSPI_TransactionParams.ucNrOfBytesForTx = 5;
+	sSPI_TransactionParams.ucTxBytesOffset = 0;
+	
+	sSPI_TransactionParams.pucBytesForRx = &ucDataReceived;
+	sSPI_TransactionParams.ucNrOfBytesForRx = 1;
+	sSPI_TransactionParams.ucRxBytesOffset = 0;
+	
+	ucDataToSend[0] = 0x40;
+	ucDataToSend[1] = 0x00;
+	ucDataToSend[2] = 0x00; //out
+	
+	ucDataToSend[3] = 0x41;
+	ucDataToSend[4] = 0x09;
+	
+	IO0CLR = CS_P010_bm;
+	SPI_ExecuteTransaction(sSPI_TransactionParams);
+	IO0SET = CS_P010_bm;
+	
+	return ucDataReceived;
+}
+
+void Delay(int iLatency) {
+	
+	int iLoopCounter;
+	
+	for (iLoopCounter = 0; iLoopCounter < (iLatency*5455); iLoopCounter++) {}
+}
 //******************************************main************************************************
 int main() {
 	
-
-	int i;
+	unsigned char ucData = 0x55;
+	Port_MCP23S09_InitCSPin();
+	SPI_LPC2132_Init();
 	
-	DAC_MCP_4921_InitCSPin();
-	DAC_MCP_4921_Init();
+	//Port_MCP23S09_Set(ucData);
 	
 	while(1) {
-		for (i = 0; i < 360; i++) {
-			DAC_MCP_4921_SetAdv_mV(get_uisin_dac_value(i));
-		}
+		Port_MCP23S09_Set(ucData);
+		Delay(200);
 	}
 }
