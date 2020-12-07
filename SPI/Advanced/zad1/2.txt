@@ -1,0 +1,34 @@
+czas obliczony:
+
+CCLK = 60 MHz
+PCLK = CCLK / APB_DIVIDER = 60MHz / 4 = 15 MHz
+SCK_f = PCLK / SPI_CLOCK_COUNTER = 15MHz / 8 = 1 875 000 Hz
+SCK_T = 1 / SCK_f = 1 / 1875000 = 0,533us
+TRANS_T = BIT_NUM * SCK_T = 0,533us * 16 = 8,53us	
+SINUS_T = TRANS_NUM * TRANS_T = 360 * 8,53us = 3,070ms
+
+real bez LUT:
+10us na transfer
+58,75us między transmisjami
+68,75us * 360 = 24,75ms
+
+
+SINUS_T teoretyczny: 3,070ms
+SINUS_T bez LUT: 24,75ms
+SINUS_T z LUT : 5,49ms
+
+czas jednej transakcji:
+obliczony	realny		realny z LUT
+8,53us		68,75us		15.25us
+
+czas między transakcjami:
+bez LUT:	z LUT:
+58,75us		5.375us
+
+
+
+
+
+
+
+
