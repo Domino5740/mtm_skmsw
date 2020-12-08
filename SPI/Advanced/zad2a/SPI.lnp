@@ -5,7 +5,6 @@
 ".\uart.o"
 ".\command_decoder.o"
 ".\spi.o"
-".\led.o"
 --strict --scatter ".\SPI.sct"
 --summary_stderr --info summarysizes --map --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers
