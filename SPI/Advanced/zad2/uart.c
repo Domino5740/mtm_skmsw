@@ -6,8 +6,8 @@
 
 /************ UART ************/
 
-#define mP0_1_RX0_PIN_MODE 							           0x00000004
-#define mP0_0_TX0_PIN_MODE 							           0x00000001
+#define mP0_1_RX0_PIN_MODE 						   0x00000004
+#define mP0_0_TX0_PIN_MODE 						   0x00000001
 
 // U0LCR Line Control Register
 #define mDIVISOR_LATCH_ACCESS_BIT                  0x00000080
@@ -44,20 +44,20 @@ void Receiver_PutCharacterToBuffer(char cCharacter) {
 		sReceiverBuffer.eStatus = OVERFLOW;
 	}
 	else {
-		if(cCharacter != TERMINATOR) {
-			sReceiverBuffer.cData[sReceiverBuffer.ucCharCtr] = cCharacter;
-			sReceiverBuffer.ucCharCtr += 1;
-		}
-		else {
+		if(cCharacter == TERMINATOR) {
 			sReceiverBuffer.cData[sReceiverBuffer.ucCharCtr] = '\0';
 			sReceiverBuffer.eStatus = READY;
 			sReceiverBuffer.ucCharCtr = 0;
+		}
+		else {
+			sReceiverBuffer.cData[sReceiverBuffer.ucCharCtr] = cCharacter;
+			sReceiverBuffer.ucCharCtr += 1;
 		}
 	}
 }
 
 enum eReceiverStatus eReceiver_GetStatus(void){
-		return sReceiverBuffer.eStatus;
+	return sReceiverBuffer.eStatus;
 }	
 
 void Receiver_GetStringCopy(char *cDestination){
@@ -68,7 +68,8 @@ void Receiver_GetStringCopy(char *cDestination){
 		cDestination[sReceiverBuffer.ucCharCtr] = sReceiverBuffer.cData[sReceiverBuffer.ucCharCtr];
 		sReceiverBuffer.ucCharCtr++;
 	}
-	sReceiverBuffer.eStatus=EMPTY;	
+	sReceiverBuffer.eStatus = EMPTY;
+	sReceiverBuffer.ucCharCtr = 0;
 }	
 
 ////////////////////////////////////////////
@@ -85,6 +86,7 @@ char Transmitter_GetCharacterFromBuffer(void) {
 			cData = NULL;
 			sTransmitterBuffer.fLastCharacter = 0;
 			sTransmitterBuffer.ucCharCtr = 0;
+			sTransmitterBuffer.eStatus = FREE;
 		}
 		else if(cData == NULL) {
 			cData = TERMINATOR;
@@ -109,7 +111,6 @@ enum eTransmitterStatus Transmitter_GetStatus(void) {
 
 ///////////////////////////////////////////
 __irq void UART0_Interrupt (void) {
-   // jesli przerwanie z odbiornika (Rx)
    
    unsigned int uiCopyOfU0IIR = U0IIR; // odczyt U0IIR powoduje jego kasowanie wiec lepiej pracowac na kopii
    char cCharacterFromBuffer;
@@ -123,9 +124,6 @@ __irq void UART0_Interrupt (void) {
 		if(Transmitter_GetStatus() == BUSY) {
 			cCharacterFromBuffer = Transmitter_GetCharacterFromBuffer();
 			U0THR = cCharacterFromBuffer;
-			if(cCharacterFromBuffer == NULL) {
-				sTransmitterBuffer.eStatus = FREE;
-			}
 		}
 	}
 	

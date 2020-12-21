@@ -3,7 +3,10 @@
 
 unsigned char ucTokenNr;
 struct Token asToken[MAX_TOKEN_NR];
-struct Keyword asKeywordList[MAX_KEYWORD_NR];
+struct Keyword asKeywordList[MAX_KEYWORD_NR] = {
+    {SPI_PORT_SET, "spi_port_set"},
+    {SPI_PORT_GET, "spi_port_get"}
+};
 
 unsigned char ucFindTokensInString(char *pcString) {
 	

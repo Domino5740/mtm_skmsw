@@ -15,11 +15,19 @@
 #define SPIF 1 << 7 //SPI TRANSFER COMPLETE FLAG - STATUS REGISTER
 
 //*****************************************DAC_bm*************************************************
-#define DAC_AB_SELECT_bm	  0 << 7 // 0 - DAC_A, 1 - DAC_B
+#define DAC_AB_SELECT_bm	 0 << 7 // 0 - DAC_A, 1 - DAC_B
 #define DAC_INPUT_BUFFER_bm  0 << 6 // 0 - unbuffered, 1 - buffered
 #define DAC_OUTPUT_GAIN_bm   1 << 5 // 0 - 2x, 1 - 1x
 #define DAC_OUTPUT_BUFFER_bm 1 << 4 // 0 - disabled, 1 - enabled
 #define DAC_CONFIG_BITS DAC_AB_SELECT_bm | DAC_INPUT_BUFFER_bm | DAC_OUTPUT_GAIN_bm | DAC_OUTPUT_BUFFER_bm
+
+//*****************************************MCP23S09*************************************************
+#define MCP23S09_REG_WRITE_OPCODE 0x40
+#define MCP23S09_REG_READ_OPCODE  0x41
+#define MCP23S09_IO0DIR_ADDR	  0x00
+#define MCP23S09_GPIO_ADDR		  0x09
+#define MCP23S09_IO0DIR_OUT		  0x00
+#define MCP23S09_IO0DIR_IN		  0xff
 
 //****************************************structs*************************************************
 struct SPI_FrameParams {

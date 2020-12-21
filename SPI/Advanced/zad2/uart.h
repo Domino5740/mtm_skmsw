@@ -1,4 +1,4 @@
-#define RECEIVER_SIZE 7
+#define RECEIVER_SIZE 20
 #define TERMINATOR '\r'
 #define TRANSMITTER_SIZE 20
 

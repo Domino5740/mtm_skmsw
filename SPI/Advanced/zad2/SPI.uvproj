@@ -413,21 +413,6 @@
               <FilePath>.\uart.c</FilePath>
             </File>
             <File>
-              <FileName>command_decoder.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\command_decoder.h</FilePath>
-            </File>
-            <File>
-              <FileName>string.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\string.h</FilePath>
-            </File>
-            <File>
-              <FileName>uart.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\uart.h</FilePath>
-            </File>
-            <File>
               <FileName>command_decoder.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\command_decoder.c</FilePath>
@@ -436,6 +421,11 @@
               <FileName>spi.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\led.c</FilePath>
             </File>
           </Files>
         </Group>

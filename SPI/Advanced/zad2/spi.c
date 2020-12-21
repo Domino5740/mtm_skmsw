@@ -36,20 +36,44 @@ void SPI_ConfigMaster(struct SPI_FrameParams sSPI_FrameParams) {
 	S0SPCCR = sSPI_FrameParams.ClkDivider;
 }
 
-void SPI_ExecuteTransaction(struct SPI_TransactionParams sSPI_TransactionParams) {
+void SPI_ExecuteTransaction(struct SPI_TransactionParams sSPI_TransactionParams){
 	
-	unsigned char  i;
+	unsigned char ucMaxTransaction = 0;
+	unsigned char ucRxCounter = 0;
+	unsigned char ucTxCounter = 0;
+	unsigned char ucTransactionCounter = 0;
+	unsigned char ucReceivedByte = 0;
+	unsigned char ucByteToTransmit = 0;
 	
-	for(i = 0; i < sSPI_TransactionParams.ucNrOfBytesForTx; i++) {
-		S0SPDR = *(sSPI_TransactionParams.pucBytesForTx + sSPI_TransactionParams.ucTxBytesOffset + i);
-		while(!(S0SPSR & SPIF)){}
+	unsigned char ucMaxTxTransaction = sSPI_TransactionParams.ucNrOfBytesForTx + sSPI_TransactionParams.ucTxBytesOffset;
+	unsigned char ucMaxRxTransaction = sSPI_TransactionParams.ucNrOfBytesForRx + sSPI_TransactionParams.ucRxBytesOffset;
+
+	if(ucMaxTxTransaction > ucMaxRxTransaction) {
+		ucMaxTransaction = ucMaxTxTransaction;
+	}
+	else {
+		ucMaxTransaction = ucMaxRxTransaction;
 	}
 	
-	for(i = 0; i < sSPI_TransactionParams.ucNrOfBytesForRx; i++) {
-		*(sSPI_TransactionParams.pucBytesForTx + sSPI_TransactionParams.ucRxBytesOffset + i) = S0SPDR;
-		while(!(S0SPSR & SPIF)){}
+	for(ucTransactionCounter = 0; ucTransactionCounter < ucMaxTransaction; ucTransactionCounter++) {
+		
+		if((ucTransactionCounter >= sSPI_TransactionParams.ucTxBytesOffset) & (ucTxCounter < sSPI_TransactionParams.ucNrOfBytesForTx)) {
+			ucByteToTransmit = *(sSPI_TransactionParams.pucBytesForTx + ucTxCounter);
+			ucTxCounter++;
+		}
+		else {
+			ucByteToTransmit = 0;
+		} 
+		
+		S0SPDR = ucByteToTransmit;
+		while((S0SPSR & SPIF) == 0) {}
+		ucReceivedByte = S0SPDR;
+			
+		if((ucTransactionCounter >= sSPI_TransactionParams.ucRxBytesOffset) & (ucRxCounter < sSPI_TransactionParams.ucNrOfBytesForRx)){
+			*(sSPI_TransactionParams.pucBytesForRx + ucRxCounter) = ucReceivedByte;
+			ucRxCounter++;
+		}
 	}
-	
 }
 
 void DAC_MCP_4921_InitCSPin(void){
@@ -61,10 +85,13 @@ void SPI_LPC2132_Init(void) {
 	
 	struct SPI_FrameParams sSPI_FrameParams;
 	
+	//ustalenie parametrow SPI
 	sSPI_FrameParams.ucCpha  = SPI_CPHA_bm;
 	sSPI_FrameParams.ucCpol  = SPI_CPOL_bm;
 	sSPI_FrameParams.ucClsbf = SPI_LSBF_bm;
 	sSPI_FrameParams.ClkDivider = SPI_PCLK_DIVIDER;
+	
+	//wpisanie konfiguracji do rejestrow
 	SPI_ConfigMaster(sSPI_FrameParams);
 }
 
@@ -73,13 +100,16 @@ void DAC_MCP_4921_SetAdv(unsigned int uiVoltage) {
 	struct SPI_TransactionParams sSPI_TransactionParams;
 	unsigned char ucDACWord[2];
 	
+	//ustalenie parametrow transakcji
 	sSPI_TransactionParams.ucNrOfBytesForTx = 2;
 	sSPI_TransactionParams.ucTxBytesOffset = 0;
 	sSPI_TransactionParams.pucBytesForTx = ucDACWord;
 	
+	//przygotowanie danych do wyslania
 	ucDACWord[0] = DAC_CONFIG_BITS | ((uiVoltage & 0xf00) >> 8);
 	ucDACWord[1] = uiVoltage & 0x0ff;
 	
+	//wykonanie transakcji
 	IO0CLR = CS_P010_bm;
 	SPI_ExecuteTransaction(sSPI_TransactionParams);
 	IO0SET = CS_P010_bm;
@@ -103,24 +133,29 @@ void Port_MCP23S09_Set(unsigned char ucData) {
 	struct SPI_TransactionParams sSPI_TransactionParams;
 	unsigned char ucDataToSend[3];
 	
+	//ustalenie parametrow ramki
 	sSPI_TransactionParams.pucBytesForTx = ucDataToSend;
 	sSPI_TransactionParams.ucNrOfBytesForTx = 3;
 	sSPI_TransactionParams.ucTxBytesOffset = 0;
-	
 	sSPI_TransactionParams.ucNrOfBytesForRx = 0;
+	sSPI_TransactionParams.ucRxBytesOffset = 0;
 	
-	ucDataToSend[0] = 0x40;
-	ucDataToSend[1] = 0x00;
-	ucDataToSend[2] = 0x00;
+	//przygotowanie danych do wyslania
+	ucDataToSend[0] = MCP23S09_REG_WRITE_OPCODE;
+	ucDataToSend[1] = MCP23S09_IO0DIR_ADDR;
+	ucDataToSend[2] = MCP23S09_IO0DIR_OUT;
 	
+	//wykonanie transakcji
 	IO0CLR = CS_P010_bm;
 	SPI_ExecuteTransaction(sSPI_TransactionParams);
 	IO0SET = CS_P010_bm;
 	
-	ucDataToSend[0] = 0x40;
-	ucDataToSend[1] = 0x09;
+	//przygotowanie danych do wyslania
+	ucDataToSend[0] = MCP23S09_REG_WRITE_OPCODE;
+	ucDataToSend[1] = MCP23S09_GPIO_ADDR;
 	ucDataToSend[2] = ucData;
 	
+	//wykonanie transakcji
 	IO0CLR = CS_P010_bm;
 	SPI_ExecuteTransaction(sSPI_TransactionParams);
 	IO0SET = CS_P010_bm;
@@ -130,34 +165,37 @@ void Port_MCP23S09_Set(unsigned char ucData) {
 unsigned char Port_MCP23S09_Get(void) {
 	
 	struct SPI_TransactionParams sSPI_TransactionParams;
-	unsigned char ucDataToSend[5];
-	unsigned char ucDataReceived;
+	unsigned char ucDataToSend[3];
+	unsigned char ucDataReceived = 0;
 	
+	//ustalenie parametrow ramki
 	sSPI_TransactionParams.pucBytesForTx = ucDataToSend;
 	sSPI_TransactionParams.ucNrOfBytesForTx = 3;
 	sSPI_TransactionParams.ucTxBytesOffset = 0;
-	
 	sSPI_TransactionParams.ucNrOfBytesForRx = 0;
+	sSPI_TransactionParams.ucRxBytesOffset = 0;
 	
-	ucDataToSend[0] = 0x40;
-	ucDataToSend[1] = 0x00;
-	ucDataToSend[2] = 0xff;
+	//przygotowanie danych do wyslania
+	ucDataToSend[0] = MCP23S09_REG_WRITE_OPCODE;
+	ucDataToSend[1] = MCP23S09_IO0DIR_ADDR;
+	ucDataToSend[2] = MCP23S09_IO0DIR_IN;
 	
+	//wykonanie transakcji
 	IO0CLR = CS_P010_bm;
 	SPI_ExecuteTransaction(sSPI_TransactionParams);
 	IO0SET = CS_P010_bm;
 	
-	
+	//ustalenie parametrow ramki nr 2
 	sSPI_TransactionParams.ucNrOfBytesForTx = 2;
-	
 	sSPI_TransactionParams.pucBytesForRx = &ucDataReceived;
 	sSPI_TransactionParams.ucNrOfBytesForRx = 1;
-	sSPI_TransactionParams.ucRxBytesOffset = 0;
+	sSPI_TransactionParams.ucRxBytesOffset = 2;
 	
+	//przygotowanie danych do wyslania
+	ucDataToSend[0] = MCP23S09_REG_READ_OPCODE;
+	ucDataToSend[1] = MCP23S09_GPIO_ADDR;
 	
-	ucDataToSend[0] = 0x41;
-	ucDataToSend[1] = 0x09;
-	
+	//wykonanie transakcji
 	IO0CLR = CS_P010_bm;
 	SPI_ExecuteTransaction(sSPI_TransactionParams);
 	IO0SET = CS_P010_bm;
