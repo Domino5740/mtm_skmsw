@@ -13,8 +13,6 @@ unsigned char ucTransmitterBuffer;
 char cStringToSend[9];
 char cReceiverBuffer[RECEIVER_SIZE];
 
-//***************************************functions************************************************
-
 //******************************************main************************************************
 int main() {
 	

@@ -1,0 +1,12 @@
+--cpu ARM7TDMI
+".\startup.o"
+".\main.o"
+".\command_decoder.o"
+".\string.o"
+".\uart.o"
+".\i2c.o"
+".\led.o"
+--strict --scatter ".\I2C.sct"
+--summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\I2C.map" -o .\I2C.axf

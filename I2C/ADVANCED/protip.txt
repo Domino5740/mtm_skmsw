@@ -1,0 +1,7 @@
+I2C:
+w Execute switch po statusie, w irq switch po twoim starym na karuzeli czyli trybie działania transmitera
+idea: w execute kod może się powtarzać, chodzi o to żeby cała procedura się wykonała (osobne funkcje Tx Rx itd. w środku execute)
+
+1. nie zagnieżdżać nadajnika w odbiorniku - równolegle działanie
+2. komunikacja odbiornika z nadajnikiem - zad. z zegarkiem
+3. 1 odwołanie w main do transmitterbufferstatus

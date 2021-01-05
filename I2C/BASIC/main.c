@@ -17,7 +17,7 @@
 #define I2C_SLAVE_ADDR 0x20
 
 //******************************************************VIC********************************************************************
-#define VIC_I2C_bm 1 << 9
+#define VIC_I2C_bm    1 << 9
 #define VIC_IRQ_EN_bm 1 << 5
 #define VIC_I2C_INT 9
 
@@ -65,21 +65,21 @@ __irq void I2C_Interrupt(void) {
 			break;
 		case SLAR_NOT_ACK_RECEIVED:
 			I2C0CONSET = STO_bm | AA_bm;
-			IO1SET = iReadI2Stat;
+			IO1SET = iReadI2Stat << 16;
 			break;
 		case DATA_ACK_RECEIVED:
 			I2C0CONSET = STO_bm | AA_bm;
 			break;
 		case DATA_NOT_ACK_RECEIVED:
 			I2C0CONSET = STO_bm | AA_bm;
-			IO1SET = iReadI2Stat;
+			IO1SET = iReadI2Stat << 16;
 			break;
 		case ARBITRATION_LOST:
 			I2C0CONSET = STA_bm | AA_bm;
-			IO1SET = iReadI2Stat;
+			IO1SET = iReadI2Stat << 16;
 			break;
 		default:
-			IO1SET = iReadI2Stat;
+			IO1SET = iReadI2Stat << 16;
 			break;
 	}
 	I2C0CONCLR = SI_bm;

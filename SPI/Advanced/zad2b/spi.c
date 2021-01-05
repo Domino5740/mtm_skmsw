@@ -36,6 +36,17 @@ void SPI_ConfigMaster(struct SPI_FrameParams sSPI_FrameParams) {
 	S0SPCCR = sSPI_FrameParams.ClkDivider;
 }
 
+unsigned char ByteTxRx(unsigned char ucByteToTransmit) {
+	
+		unsigned char ucReceivedByte;
+	
+		S0SPDR = ucByteToTransmit;
+		while((S0SPSR & SPIF) == 0) {}
+		ucReceivedByte = S0SPDR;
+			
+		return ucReceivedByte;
+};
+
 void SPI_ExecuteTransaction(struct SPI_TransactionParams sSPI_TransactionParams){
 	
 	unsigned char ucMaxTransaction = 0;
@@ -65,9 +76,7 @@ void SPI_ExecuteTransaction(struct SPI_TransactionParams sSPI_TransactionParams)
 			ucByteToTransmit = 0;
 		} 
 		
-		S0SPDR = ucByteToTransmit;
-		while((S0SPSR & SPIF) == 0) {}
-		ucReceivedByte = S0SPDR;
+		ucReceivedByte = ByteTxRx(ucByteToTransmit);
 			
 		if((ucTransactionCounter >= sSPI_TransactionParams.ucRxBytesOffset) & (ucRxCounter < sSPI_TransactionParams.ucNrOfBytesForRx)){
 			*(sSPI_TransactionParams.pucBytesForRx + ucRxCounter) = ucReceivedByte;
